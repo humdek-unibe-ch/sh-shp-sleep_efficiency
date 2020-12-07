@@ -23,7 +23,9 @@ class SleepEfficiencyModule extends BaseModel
     const TST_1 = 'TST_1'; // required name for formInput field
     const TST_2 = 'TST_2'; // required name for formInput field
     const SE = 'SE'; // required name for formInput field
+    const SE_P = 'SE_P'; // if you want to save percent field
     const SE_3 = 'SE_3'; // required name for formInput field
+    const SE_3_P = 'SE_3_P'; // if you want to save percent field
     const debug_log = 'debug_log'; // if you want to check the debug log create such field
     const entry_date = 'entry_date'; // required name for formInput field
 
@@ -98,7 +100,8 @@ class SleepEfficiencyModule extends BaseModel
      */
     private function calc_time_diff($time1, $time2)
     {
-        return round(abs(strtotime($time2) - strtotime($time1)) / 3600, 2);
+        $diff = (strtotime($time2) - strtotime($time1)) / 3600;
+        return $diff < 0 ? (24 + $diff) : $diff;
     }
 
     /**
@@ -133,6 +136,7 @@ class SleepEfficiencyModule extends BaseModel
             $values[SleepEfficiencyModule::TST] = $this->calc_time_diff($_POST[SleepEfficiencyModule::TST_1]['value'], $_POST[SleepEfficiencyModule::TST_2]['value']);
             if ($values[SleepEfficiencyModule::TIB] != 0) {
                 $values[SleepEfficiencyModule::SE] = ($values[SleepEfficiencyModule::TST] / $values[SleepEfficiencyModule::TIB]) * 100;
+                $values[SleepEfficiencyModule::SE_P] = round($values[SleepEfficiencyModule::SE], 0) . '%';
             }
             $previos_records = $this->get_previos_records($this->get_parent($this->section_id));
             if (count($previos_records) >= 2) {
@@ -145,6 +149,7 @@ class SleepEfficiencyModule extends BaseModel
                     $last_2_days_TST = $last_2_days_TST + $this->calc_time_diff($previos_records[$i][SleepEfficiencyModule::TST_1], $previos_records[$i][SleepEfficiencyModule::TST_2]);
                 }
                 $values[SleepEfficiencyModule::SE_3] = ((($last_2_days_TST + $values[SleepEfficiencyModule::TST]) / 3) / (($last_2_days_TIB + $values[SleepEfficiencyModule::TIB]) / 3)) * 100;
+                $values[SleepEfficiencyModule::SE_3_P] = round($values[SleepEfficiencyModule::SE_3], 0) . '%';
             }
         }
         foreach ($values as $field => $value) {
