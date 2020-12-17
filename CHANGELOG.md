@@ -1,4 +1,11 @@
-# v1.0.1 (latest)
+# v1.0.2 (latest)
+
+### Changes
+
+ - Removed fields `TST_1` and `TST_2`. Now field `TST` is required.
+ - The average sleeping efficency `CE_3` is calculated based on the last 5 days only. If there is no entries then it is not calculated.
+
+# v1.0.1
 
 ### Changes
 
