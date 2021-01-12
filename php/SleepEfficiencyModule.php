@@ -76,11 +76,13 @@ class SleepEfficiencyModule extends BaseModel
     /**
      * Get the previous record for the user and current form
      * @param int $form_id the id of the form that hold the results
+     * @param string $entry_date The entry date of the sleep diary date
      * @retval array Sql array result
      */
-    private function get_previos_records($form_id)
+    private function get_previos_records($form_id, $entry_date)
     {
-        $sql = 'CALL get_form_data_for_user(' . $form_id . ', ' . $_SESSION['id_user'] . ')';
+        $filter = "AND entry_date < '" . $entry_date . "' ORDER BY entry_date DESC";
+        $sql = 'CALL get_form_data_for_user_with_filter(' . $form_id . ', ' . $_SESSION['id_user'] . ', "' . $filter . '")';
         return $this->db->query_db($sql);
     }
 
@@ -132,10 +134,9 @@ class SleepEfficiencyModule extends BaseModel
                 $values[SleepEfficiencyModule::SE] = ($_POST[SleepEfficiencyModule::TST]['value'] / $values[SleepEfficiencyModule::TIB]) * 100;
                 $values[SleepEfficiencyModule::SE_P] = round($values[SleepEfficiencyModule::SE], 0) . '%';
             }
-            $previos_records = $this->get_previos_records($this->get_parent($this->section_id));
+            $previos_records = $this->get_previos_records($this->get_parent($this->section_id), $_POST[SleepEfficiencyModule::entry_date]['value']);
             if (count($previos_records) >= 2) {
                 // there are at least 2 values
-                array_multisort(array_column($previos_records, SleepEfficiencyModule::entry_date), SORT_DESC, $previos_records);
                 $last_2_days_TIB = 0;
                 $last_2_days_TST = 0;
                 $calc_sleep_efficiency = true;

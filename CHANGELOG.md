@@ -1,4 +1,10 @@
-# v1.0.2 (latest)
+# v1.0.3 (latest)
+
+### Bugfix
+
+ - Properly determine when an old date is used as entry date when calculates the sleep efficiency.
+
+# v1.0.2
 
 ### Changes
 
