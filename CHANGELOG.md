@@ -1,4 +1,9 @@
-# v1.0.3 (latest)
+# v1.0.4 (latest)
+### Changes
+
+ - dont calculate average sleep efficiency (`SE_3`) unless it is a new 3 date period. It is calculated for every third entry.
+
+# v1.0.3
 
 ### Bugfix
 

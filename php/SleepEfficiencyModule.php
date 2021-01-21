@@ -148,6 +148,10 @@ class SleepEfficiencyModule extends BaseModel
                         // dont calculate average sleep efficiency for the last 3 days if there is a difference of 5 days
                         $calc_sleep_efficiency = false;
                     }
+                    if ($previos_records[$i][SleepEfficiencyModule::SE_3]) {
+                        // dont calculate average sleep efficiency unless it is a new 3 date period. It is calculated for every third entry
+                        $calc_sleep_efficiency = false;
+                    }
                 }
                 if ($calc_sleep_efficiency) {
                     $values[SleepEfficiencyModule::SE_3] = ((($last_2_days_TST + $_POST[SleepEfficiencyModule::TST]['value']) / 3) / (($last_2_days_TIB + $values[SleepEfficiencyModule::TIB]) / 3)) * 100;
