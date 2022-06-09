@@ -27,7 +27,15 @@ class SleepEfficiencyModule extends BaseModel
     const debug_log = 'debug_log'; // if you want to check the debug log create such field
     const entry_date = 'entry_date'; // required name for formInput field
 
+    /* GRAPH CONSTANTS*/
+
     /* Private Properties *****************************************************/
+    const GRAPH_TIB_1 = 'GRAPH_TIB_1';
+    const GRAPH_TIB_2 = 'GRAPH_TIB_2';
+    const GRAPH_TST_1 = 'GRAPH_TST_1';
+    const GRAPH_TST_2 = 'GRAPH_TST_2';
+    const NIGHT_DATE = '2022-06-01';
+    const MORNING_DATE = '2022-06-02';
 
     /**
      * Section_id of the trigger
@@ -40,7 +48,7 @@ class SleepEfficiencyModule extends BaseModel
      * The constructor.
      *
      * @param array $services
-     *  An associative array holding the differnt available services. See the
+     *  An associative array holding the different available services. See the
      *  class definition BasePage for a list of all services.
      * @param int $section_id
      * Section_id of the trigger
@@ -55,8 +63,8 @@ class SleepEfficiencyModule extends BaseModel
 
     /**
      * Validate required fields and check if they are set in the POST data
-     * @retval array 
-     * Returns error mssgs in array if there are some
+     * @return array 
+     * Returns error messages in array if there are some
      */
     private function validate()
     {
@@ -77,9 +85,9 @@ class SleepEfficiencyModule extends BaseModel
      * Get the previous record for the user and current form
      * @param int $form_id the id of the form that hold the results
      * @param string $entry_date The entry date of the sleep diary date
-     * @retval array Sql array result
+     * @return array Sql array result
      */
-    private function get_previos_records($form_id, $entry_date)
+    private function get_previous_records($form_id, $entry_date)
     {
         $filter = "AND entry_date < '" . $entry_date . "' ORDER BY entry_date DESC";
         $sql = 'CALL get_form_data_for_user_with_filter(' . $form_id . ', ' . $_SESSION['id_user'] . ', "' . $filter . '")';
@@ -92,7 +100,7 @@ class SleepEfficiencyModule extends BaseModel
      * first data
      * @param string $time2
      * second date
-     * @retval double 
+     * @return double 
      * Return the hours between both dates
      */
     private function calc_time_diff($time1, $time2)
@@ -105,7 +113,7 @@ class SleepEfficiencyModule extends BaseModel
      * Get the parent of the section
      * @param int $child
      * The id of the child
-     * @retval int 
+     * @return int 
      * Return the id of the parent, in this case the form in which we setup a trigger
      */
     private function get_parent($child)
@@ -134,21 +142,21 @@ class SleepEfficiencyModule extends BaseModel
                 $values[SleepEfficiencyModule::SE] = ($_POST[SleepEfficiencyModule::TST]['value'] / $values[SleepEfficiencyModule::TIB]) * 100;
                 $values[SleepEfficiencyModule::SE_P] = round($values[SleepEfficiencyModule::SE], 0) . '%';
             }
-            $previos_records = $this->get_previos_records($this->get_parent($this->section_id), $_POST[SleepEfficiencyModule::entry_date]['value']);
-            if (count($previos_records) >= 2) {
+            $previous_records = $this->get_previous_records($this->get_parent($this->section_id), $_POST[SleepEfficiencyModule::entry_date]['value']);
+            if (count($previous_records) >= 2) {
                 // there are at least 2 values
                 $last_2_days_TIB = 0;
                 $last_2_days_TST = 0;
                 $calc_sleep_efficiency = true;
                 for ($i = 0; $i < 2; $i++) {
-                    $last_2_days_TIB = $last_2_days_TIB + $this->calc_time_diff($previos_records[$i][SleepEfficiencyModule::TIB_1], $previos_records[$i][SleepEfficiencyModule::TIB_2]);
-                    $last_2_days_TST = $last_2_days_TST + $previos_records[$i][SleepEfficiencyModule::TST];
-                    $day_difference = (strtotime($_POST[SleepEfficiencyModule::entry_date]['value']) - strtotime($previos_records[$i][SleepEfficiencyModule::entry_date])) / (60 * 60 * 24);
+                    $last_2_days_TIB = $last_2_days_TIB + $this->calc_time_diff($previous_records[$i][SleepEfficiencyModule::TIB_1], $previous_records[$i][SleepEfficiencyModule::TIB_2]);
+                    $last_2_days_TST = $last_2_days_TST + $previous_records[$i][SleepEfficiencyModule::TST];
+                    $day_difference = (strtotime($_POST[SleepEfficiencyModule::entry_date]['value']) - strtotime($previous_records[$i][SleepEfficiencyModule::entry_date])) / (60 * 60 * 24);
                     if ($day_difference > 5) {
                         // dont calculate average sleep efficiency for the last 3 days if there is a difference of 5 days
                         $calc_sleep_efficiency = false;
                     }
-                    if ($previos_records[$i][SleepEfficiencyModule::SE_3]) {
+                    if ($previous_records[$i][SleepEfficiencyModule::SE_3]) {
                         // dont calculate average sleep efficiency unless it is a new 3 date period. It is calculated for every third entry
                         $calc_sleep_efficiency = false;
                     }
@@ -157,6 +165,18 @@ class SleepEfficiencyModule extends BaseModel
                     $values[SleepEfficiencyModule::SE_3] = ((($last_2_days_TST + $_POST[SleepEfficiencyModule::TST]['value']) / 3) / (($last_2_days_TIB + $values[SleepEfficiencyModule::TIB]) / 3)) * 100;
                     $values[SleepEfficiencyModule::SE_3_P] = round($values[SleepEfficiencyModule::SE_3], 0) . '%';
                 }
+            }
+            $TIB_2_date = DateTime::createFromFormat('Y-m-d H:i:s', SleepEfficiencyModule::MORNING_DATE . ' ' . $_POST[SleepEfficiencyModule::TIB_2]['value'] . ":00");
+            $values[SleepEfficiencyModule::GRAPH_TIB_2] = $TIB_2_date->format('Y-m-d H:i:s');
+            $TIB_1_date = (clone $TIB_2_date)->sub(new DateInterval('PT' . $values[SleepEfficiencyModule::TIB] * 60 . 'M'));
+            $values[SleepEfficiencyModule::GRAPH_TIB_1] = $TIB_1_date->format('Y-m-d H:i:s');
+            $half_diff = ($values[SleepEfficiencyModule::TIB]  - $_POST[SleepEfficiencyModule::TST]['value']) / 2;
+            if ($_POST[SleepEfficiencyModule::TST]['value'] == 0) {
+                $values[SleepEfficiencyModule::GRAPH_TST_1] = null;
+                $values[SleepEfficiencyModule::GRAPH_TST_2] = null;
+            } else {
+                $values[SleepEfficiencyModule::GRAPH_TST_1] = $TIB_1_date->add(new DateInterval('PT' . intval($half_diff * 60) . 'M'))->format('Y-m-d H:i:s');
+                $values[SleepEfficiencyModule::GRAPH_TST_2] = $TIB_2_date->sub(new DateInterval('PT' . intval($half_diff * 60) . 'M'))->format('Y-m-d H:i:s');
             }
         }
         foreach ($values as $field => $value) {

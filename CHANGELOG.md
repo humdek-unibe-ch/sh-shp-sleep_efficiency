@@ -1,3 +1,8 @@
+# v1.0.5
+### New Features
+
+ - Added support to 4 new fields (`GRAPH_TIB_1`,`GRAPH_TIB_2`,`GRAPH_TST_1`,`GRAPH_TST_2`) which can calculate the date and later these fields can be used to show a chart.
+
 # v1.0.4 (latest)
 ### Changes
 
