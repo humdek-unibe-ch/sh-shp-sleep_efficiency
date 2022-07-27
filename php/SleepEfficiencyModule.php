@@ -20,6 +20,8 @@ class SleepEfficiencyModule extends BaseModel
     const TIB_1 = 'TIB_1'; // required name for formInput field
     const TIB_2 = 'TIB_2'; // required name for formInput field
     const TST = 'TST'; // required name for formInput field
+    const TST_1 = 'TST_1'; // required name for formInput field
+    const TST_2 = 'TST_2'; // required name for formInput field
     const SE = 'SE'; // required name for formInput field
     const SE_P = 'SE_P'; // if you want to save percent field
     const SE_3 = 'SE_3'; // required name for formInput field
@@ -138,6 +140,7 @@ class SleepEfficiencyModule extends BaseModel
         );
         if (count($validation_result) == 0) {
             $values[SleepEfficiencyModule::TIB] = $this->calc_time_diff($_POST[SleepEfficiencyModule::TIB_1]['value'], $_POST[SleepEfficiencyModule::TIB_2]['value']);
+            $values[SleepEfficiencyModule::TST] = $this->calc_time_diff($_POST[SleepEfficiencyModule::TST_1]['value'], $_POST[SleepEfficiencyModule::TST_2]['value']);
             if ($values[SleepEfficiencyModule::TIB] != 0) {
                 $values[SleepEfficiencyModule::SE] = ($_POST[SleepEfficiencyModule::TST]['value'] / $values[SleepEfficiencyModule::TIB]) * 100;
                 $values[SleepEfficiencyModule::SE_P] = round($values[SleepEfficiencyModule::SE], 0) . '%';
@@ -170,14 +173,11 @@ class SleepEfficiencyModule extends BaseModel
             $values[SleepEfficiencyModule::GRAPH_TIB_2] = $TIB_2_date->format('Y-m-d H:i:s');
             $TIB_1_date = (clone $TIB_2_date)->sub(new DateInterval('PT' . $values[SleepEfficiencyModule::TIB] * 60 . 'M'));
             $values[SleepEfficiencyModule::GRAPH_TIB_1] = $TIB_1_date->format('Y-m-d H:i:s');
-            $half_diff = ($values[SleepEfficiencyModule::TIB]  - $_POST[SleepEfficiencyModule::TST]['value']) / 2;
-            if ($_POST[SleepEfficiencyModule::TST]['value'] == 0) {
-                $values[SleepEfficiencyModule::GRAPH_TST_1] = null;
-                $values[SleepEfficiencyModule::GRAPH_TST_2] = null;
-            } else {
-                $values[SleepEfficiencyModule::GRAPH_TST_1] = $TIB_1_date->add(new DateInterval('PT' . intval($half_diff * 60) . 'M'))->format('Y-m-d H:i:s');
-                $values[SleepEfficiencyModule::GRAPH_TST_2] = $TIB_2_date->sub(new DateInterval('PT' . intval($half_diff * 60) . 'M'))->format('Y-m-d H:i:s');
-            }
+
+            $TST_2_date = DateTime::createFromFormat('Y-m-d H:i:s', SleepEfficiencyModule::MORNING_DATE . ' ' . $_POST[SleepEfficiencyModule::TST_2]['value'] . ":00");
+            $values[SleepEfficiencyModule::GRAPH_TST_2] = $TST_2_date->format('Y-m-d H:i:s');
+            $TST_1_date = (clone $TST_2_date)->sub(new DateInterval('PT' . $values[SleepEfficiencyModule::TST] * 60 . 'M'));
+            $values[SleepEfficiencyModule::GRAPH_TST_1] = $TST_1_date->format('Y-m-d H:i:s');
         }
         foreach ($values as $field => $value) {
             if (isset($_POST[$field])) {

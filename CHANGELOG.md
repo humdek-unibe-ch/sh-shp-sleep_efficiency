@@ -1,3 +1,7 @@
+# v1.0.6
+### New Features
+ - Add calculation for `TST` based on `TST_1` and `TST_2`
+
 # v1.0.5
 ### New Features
 
