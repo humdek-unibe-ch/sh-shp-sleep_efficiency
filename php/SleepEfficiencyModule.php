@@ -142,7 +142,7 @@ class SleepEfficiencyModule extends BaseModel
             $values[SleepEfficiencyModule::TIB] = $this->calc_time_diff($_POST[SleepEfficiencyModule::TIB_1]['value'], $_POST[SleepEfficiencyModule::TIB_2]['value']);
             $values[SleepEfficiencyModule::TST] = $this->calc_time_diff($_POST[SleepEfficiencyModule::TST_1]['value'], $_POST[SleepEfficiencyModule::TST_2]['value']);
             if ($values[SleepEfficiencyModule::TIB] != 0) {
-                $values[SleepEfficiencyModule::SE] = ($_POST[SleepEfficiencyModule::TST]['value'] / $values[SleepEfficiencyModule::TIB]) * 100;
+                $values[SleepEfficiencyModule::SE] = ($values[SleepEfficiencyModule::TST]  / $values[SleepEfficiencyModule::TIB]) * 100;
                 $values[SleepEfficiencyModule::SE_P] = round($values[SleepEfficiencyModule::SE], 0) . '%';
             }
             $previous_records = $this->get_previous_records($this->get_parent($this->section_id), $_POST[SleepEfficiencyModule::entry_date]['value']);
@@ -165,7 +165,7 @@ class SleepEfficiencyModule extends BaseModel
                     }
                 }
                 if ($calc_sleep_efficiency) {
-                    $values[SleepEfficiencyModule::SE_3] = ((($last_2_days_TST + $_POST[SleepEfficiencyModule::TST]['value']) / 3) / (($last_2_days_TIB + $values[SleepEfficiencyModule::TIB]) / 3)) * 100;
+                    $values[SleepEfficiencyModule::SE_3] = ((($last_2_days_TST + $values[SleepEfficiencyModule::TST]) / 3) / (($last_2_days_TIB + $values[SleepEfficiencyModule::TIB]) / 3)) * 100;
                     $values[SleepEfficiencyModule::SE_3_P] = round($values[SleepEfficiencyModule::SE_3], 0) . '%';
                 }
             }
